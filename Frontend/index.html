@@ -26,7 +26,9 @@
         <div id="search-results">
             <ul>
                 {% for result in search_results %}
-                <li><a href="{{ url_for('document', result_id=result.id) }}">{{ result.title }}</a></li>
+                <li><a href="{{ url_for('document', result_id=result.id) }}">{{ title }}</a><br>
+                    <p>{{content}}</p>
+                </li>
                 {% endfor %}
             </ul>
         </div>

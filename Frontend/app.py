@@ -23,16 +23,5 @@ def index():
 
     return render_template("index.html", search_results=search_results)
 
-
-@app.route("/document/<int:result_id>")
-def document(result_id):
-    # Find the document with the given ID
-    result = next((doc for doc in documents if doc["id"] == result_id), None)
-    if result:
-        return render_template("document.html", result=result)
-    else:
-        return "Document not found"
-
-
 if __name__ == "__main__":
     app.run(debug=True)
