@@ -17,11 +17,9 @@ def index():
     if request.method == "POST":
         search_term = request.form.get("search")
         # Dummy search logic: Find documents containing the search term
-        search_results = [
-            doc for doc in documents if search_term.lower() in doc["title"].lower()
-        ]
+        search_results = ""
 
-    return render_template("index.html", search_results=search_results)
+    return render_template("index.html", results=search_results)
 
 if __name__ == "__main__":
     app.run(debug=True)
