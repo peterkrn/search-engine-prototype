@@ -82,9 +82,9 @@ body {
 }
 
 #form > svg {
-  position: relative;
+  position: absolute;
   color: #9A9FA5;
-  left: 5%;
+  padding-left: 10px;
   background: none;
 }
 
