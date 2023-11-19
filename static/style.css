@@ -116,6 +116,13 @@ body {
   -webkit-line-clamp: 2; /* Adjust the number of lines as needed */
   -webkit-box-orient: vertical;
   overflow: hidden;
+  color: #A9ADB2;
+}
+
+#search-results > ul > li > a {
+  color: #84ABEC;
+  font-size: 1.3em;
+  text-decoration: none;
 }
 
 #not_found {
