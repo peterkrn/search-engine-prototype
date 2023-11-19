@@ -1,0 +1,127 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@500&family=Roboto&display=swap");
+
+@font-face {
+  font-family: "Potter"; /* Choose a name for your font */
+  src: url("assets/HarryP-MVZ6w.ttf") format("truetype"); /* Adjust the path and format based on your font file */
+  font-weight: normal; /* Specify the font weight */
+  font-style: normal; /* Specify the font style */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  background-color: #202124;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+#logo {
+  font-size: 4em;
+  color: white;
+  font-family: "Potter", sans;
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding-bottom: 10px;
+}
+
+#input_search {
+  border: 1px solid #474a4e;
+  border-radius: 30px;
+  height: 50px;
+  width: 60vh;
+  color: white;
+  padding-left: 8%;
+  padding-right: 20px;
+  font-family: "Roboto", sans-serif;
+}
+
+#input_search:hover,
+#input_search:focus {
+  background-color: #303134;
+  border: 1px solid #303134;
+  box-shadow: 0px 0px 2px black;
+}
+
+#input_search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 16px; /* Adjust the height as needed */
+  width: 16px; /* Adjust the width as needed */
+  cursor: pointer;
+  background-image: url("assets/x.png");
+}
+
+#form {
+  display: flex;
+  align-items: center;
+}
+
+#form > button {
+  color: white;
+  margin-left: 10px;
+  background-color: #303134;
+  border: none;
+  width: 80px;
+  height: 40px;
+  font-size: 1em;
+  border-radius: 5px;
+  font-family: "Roboto", sans-serif;
+}
+
+#form > button:hover {
+  cursor: pointer;
+  border: 1px solid #5f6368;
+  color: #e7e9ec;
+}
+
+#form > svg {
+  position: absolute;
+  color: #9a9fa5;
+  padding-left: 10px;
+  background: none;
+}
+
+#search-results {
+  overflow: auto;
+  width: 1000px; /* Set the desired width */
+  height: 400px; /* Set the desired height */
+  color: white;
+  font-family: "Roboto", sans-serif;
+}
+
+#search-results > ul {
+  list-style: none;
+}
+
+#search-results > ul > li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+#search-results > ul > li > p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Adjust the number of lines as needed */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#not_found {
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-size: 1.5em;
+  padding-top: 20px;
+  text-align: center;
+}
