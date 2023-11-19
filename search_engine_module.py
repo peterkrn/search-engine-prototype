@@ -7,7 +7,8 @@ Original file is located at
     https://colab.research.google.com/drive/1vKw-A9eySHc7JI1teC6Etb_xtMLxeWr6
 """
 
-import zipfile
+import json
+import concurrent.futures
 import os
 import re
 import nltk
@@ -21,24 +22,32 @@ from nltk.collections import Counter
 nltk.download("stopwords")
 nltk.download("wordnet")
 nltk.download("averaged_perceptron_tagger")
+nltk.download("punkt")
 
 
 def intialize():
-    # Specify the path to the root folder of your dataset
-    root_folder_path = "datasets"  # Update to your actual folder path
+    data_dict_file = "data_dict.json"
 
-    # Initialize an empty dictionary to store the data
-    data_dict = {}
+    if os.path.exists(data_dict_file):
+        # Load data_dict from the file
+        with open(data_dict_file, "r", encoding="utf-8") as file:
+            data_dict = json.load(file)
+    else:
+        # Run the code to initialize data_dict
+        root_folder_path = "datasets"  # Update to your actual folder path
+        data_dict = {}
 
-    # Use os.walk to traverse through the directory tree and get all text files
-    for folder_path, _, file_names in os.walk(root_folder_path):
-        for file_name in file_names:
-            if file_name.endswith(".txt"):  # Make sure the file is a text file
-                file_path = os.path.join(folder_path, file_name)
-                with open(file_path, "r", encoding="utf-8") as file:
-                    content = file.read()
-                    # Use the filename as the key and the content as the value
-                    data_dict[file_name] = content
+        for folder_path, _, file_names in os.walk(root_folder_path):
+            for file_name in file_names:
+                if file_name.endswith(".txt"):
+                    file_path = os.path.join(folder_path, file_name)
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                        data_dict[file_name] = content
+
+        # Save data_dict to the file
+        with open(data_dict_file, "w", encoding="utf-8") as file:
+            json.dump(data_dict, file)
 
     return data_dict
 
@@ -70,7 +79,7 @@ def preprocess_text(text):
     # Lowercasing
     text = text.lower()
 
-    # Tokenize the text (using a simple split by space)
+    # Tokenize the text (using a word tokenizer)
     tokens = word_tokenize(text)
 
     # Removing common English stop words
@@ -99,10 +108,24 @@ def preprocess_text(text):
 
 
 def tf(cleaned_data_dict):
-    tf = {}
+    tf_file = "tf.json"
 
-    for key in cleaned_data_dict.keys():
-        tf[key] = Counter(cleaned_data_dict[key].split())  # document still not clean
+    if os.path.exists(tf_file):
+        # Load tf from the file
+        with open(tf_file, "r", encoding="utf-8") as file:
+            tf = json.load(file)
+    else:
+        # Compute tf
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            tf_futures = {
+                key: executor.submit(Counter, value.split())
+                for key, value in cleaned_data_dict.items()
+            }
+        tf = {key: future.result() for key, future in tf_futures.items()}
+
+        # Save tf to the file
+        with open(tf_file, "w", encoding="utf-8") as file:
+            json.dump(tf, file)
 
     return tf
 
@@ -111,15 +134,27 @@ def tf(cleaned_data_dict):
 
 
 def idf(cleaned_data_dict, tf):
-    idf = {}
-    total_docs = len(cleaned_data_dict)
+    idf_file = "idf.json"
 
-    for doc_count in tf.values():
-        for key, value in doc_count.items():
-            idf[key] = idf.get(key, 0) + 1
+    if os.path.exists(idf_file):
+        # Load idf from the file
+        with open(idf_file, "r", encoding="utf-8") as file:
+            idf = json.load(file)
+    else:
+        # Compute idf
+        idf = {}
+        total_docs = len(cleaned_data_dict)
 
-    for key, value in idf.items():
-        idf[key] = math.log(total_docs / (1 + value))
+        for doc_count in tf.values():
+            for key, value in doc_count.items():
+                idf[key] = idf.get(key, 0) + 1
+
+        for key, value in idf.items():
+            idf[key] = math.log(total_docs / (1 + value))
+
+        # Save idf to the file
+        with open(idf_file, "w", encoding="utf-8") as file:
+            json.dump(idf, file)
 
     return idf
 
@@ -128,13 +163,25 @@ def idf(cleaned_data_dict, tf):
 
 
 def tfidf(cleaned_data_dict, tf, idf):
-    tfidf = {}
+    tfidf_file = "tfidf.json"
 
-    for i in cleaned_data_dict.keys():
-        tfidf_doc = {}
-        for term, freq in tf[i].items():
-            tfidf_doc[term] = freq * idf.get(term, 0)
-        tfidf[i] = tfidf_doc
+    if os.path.exists(tfidf_file):
+        # Load tfidf from the file
+        with open(tfidf_file, "r", encoding="utf-8") as file:
+            tfidf = json.load(file)
+    else:
+        # Compute tfidf
+        tfidf = {}
+
+        for i in cleaned_data_dict.keys():
+            tfidf_doc = {}
+            for term, freq in tf[i].items():
+                tfidf_doc[term] = freq * idf.get(term, 0)
+            tfidf[i] = tfidf_doc
+
+        # Save tfidf to the file
+        with open(tfidf_file, "w", encoding="utf-8") as file:
+            json.dump(tfidf, file)
 
     return tfidf
 
@@ -161,13 +208,31 @@ def cosine_similarity(query, doc):
     return dot_product / (magnitude_query * magnitude_doc)
 
 
+def load_or_compute_cleaned_data(data_dict):
+    cleaned_data_dict_file = "cleaned_data_dict.json"
+
+    if os.path.exists(cleaned_data_dict_file):
+        # Load cleaned_data_dict from the file
+        with open(cleaned_data_dict_file, "r", encoding="utf-8") as file:
+            cleaned_data_dict = json.load(file)
+    else:
+        # Compute cleaned_data_dict
+        cleaned_data_dict = {
+            key: preprocess_text(value) for key, value in data_dict.items()
+        }
+
+        # Save cleaned_data_dict to the file
+        with open(cleaned_data_dict_file, "w", encoding="utf-8") as file:
+            json.dump(cleaned_data_dict, file)
+
+    return cleaned_data_dict
+
+
 def search(keyword):
     data_dict = intialize()
 
     # Apply the preprocess_text function to each document content in the dictionary
-    cleaned_data_dict = {
-        key: preprocess_text(value) for key, value in data_dict.items()
-    }
+    cleaned_data_dict = load_or_compute_cleaned_data(data_dict)
 
     tf_result = tf(cleaned_data_dict)
 
@@ -189,7 +254,7 @@ def sort_similarity(tfidf_query, data_dict, tfidf):
     similarity_list = {}
     for key, value in tfidf.items():
         similarity = cosine_similarity(tfidf_query, value)
-        if similarity > 0:
+        if similarity > 0.1:
             similarity_list[key] = similarity
     sorted_similarity_list = dict(
         sorted(similarity_list.items(), key=lambda item: item[1], reverse=True)
